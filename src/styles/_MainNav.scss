@@ -1,0 +1,51 @@
+@import './variables';
+
+@mixin linkStyles {
+    color: #eee;
+    text-decoration: none;
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: 0.4s;
+
+    &:hover {
+        color: white;
+    }
+}
+
+
+.main-nav {
+    width: 100vw;
+    margin-bottom: 3rem;
+    background-color: $dark-bg;
+    display: flex;
+    justify-content: space-between;
+
+    .left-side {
+
+        display: flex;
+        align-items: center;
+        
+        .logo {
+            width: 50px;
+            border-radius: 50%;
+            margin: 0.5rem 1rem;
+            box-shadow: 0 0 3px 3px white;
+            cursor: pointer;
+        }  
+        
+        .link {
+            @include linkStyles;
+        }
+    }
+
+    .right-side {
+        display: flex;
+        align-items: center;
+
+        .link {
+            @include linkStyles;
+        }
+    }
+}
