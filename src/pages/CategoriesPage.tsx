@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchCategories } from '../actions/categoryActions';
+import { fetchCategories, deleteCategory } from '../actions/categoryActions';
 import { RootState, AppDispatch } from '../store';
 import { ListGroup, Button } from 'react-bootstrap';
 import { FaTrash, FaPenFancy } from "react-icons/fa";
@@ -27,7 +27,20 @@ const CategoriesPage: React.FC = () => {
   //METHODS
   useEffect(() => {
     dispatch(fetchCategories());
-}, [dispatch]);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (modalShown === false) setCategoryToDelete(null);
+  }, [modalShown]);
+
+  useEffect(() => {
+    if (actionConfirmed && categoryToDelete) {
+        dispatch(deleteCategory(categoryToDelete, token!));
+        setActionConfirmed(false);
+    }
+  }, [actionConfirmed, token, categoryToDelete, dispatch]);
+
+
 
 
 
@@ -83,6 +96,8 @@ const CategoriesPage: React.FC = () => {
                     </ListGroup.Item>))
                 }
             </ListGroup>
+
+            <ConfirmModal show={modalShown} onHide={() => setModalShown(false)} setActionConfirmed={setActionConfirmed} />
 
     </div>
   )

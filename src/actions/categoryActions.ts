@@ -73,6 +73,33 @@ export const updateCategory = (category: CategoryModel, token: string) => {
         console.log(error);
         return { error: 'Updating category failed' };
     })
+}
 
 
+
+export const deleteCategory = (categoryId: string, token: string) => async (dispatch: any) => {
+    try {
+        dispatch(changeMessage('Deleting category...'));
+        const res = await fetch(`${api}/categories?categoryId=${categoryId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+        if (data && data.error) {
+            console.log(data.error);
+            dispatch(changeMessage(data.error)); 
+            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+            return
+        }
+        dispatch(removeCategory(categoryId));
+        dispatch(changeMessage('Category deleted'));
+        setTimeout(() => {dispatch(changeMessage(''))}, 1000);
+
+    } catch (error) {
+        console.log(error);
+        dispatch(changeMessage(JSON.stringify(error)));
+        setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+    }
 }
