@@ -38,6 +38,10 @@ const CategoriesPage: React.FC = () => {
 
         <br /><br /><br />
 
+        <div style={{height: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+            <p className='text-center message'>{message}</p>
+        </div>
+
         <ListGroup>
                 <ListGroup.Item className='text-center text-light bg-primary' style={{position: 'relative'}}> 
                     <h5 className='text-center'>CATEGORIES</h5>

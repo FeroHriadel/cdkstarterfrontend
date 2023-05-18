@@ -59,31 +59,20 @@ export const getCategoryById = async (categoryId: string) => {
 
 
 
-export const updateCategory = (category: CategoryModel, token: string) => async (dispatch: any) => {
-    try {
-        dispatch(changeMessage('Updating tag...'));
-        const res = await fetch(`${api}/categories?categoryId=${category.categoryId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(category)
-        });
-        const data = await res.json();
-        if (data && data.error) { 
-            console.log(data.error);
-            dispatch(changeMessage(data.error)); 
-            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
-            return
-        }
-        dispatch(updateCategories(data));
-        dispatch(changeMessage('Category updated'));
-        setTimeout(() => {dispatch(changeMessage(''))}, 1000);
-
-    } catch (error) {
+export const updateCategory = (category: CategoryModel, token: string) => {
+    return fetch(`${api}/categories`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(category)
+    })
+    .then(res =>  res.json() )
+    .catch(error => {
         console.log(error);
-        dispatch(changeMessage(JSON.stringify(error)));
-        setTimeout(() => {dispatch(changeMessage(''))}, 2000);
-    }
+        return { error: 'Updating category failed' };
+    })
+
+
 }

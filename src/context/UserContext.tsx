@@ -73,6 +73,19 @@ const UserContextProvider: React.FC<{ children: React.ReactNode }> = (props: Rea
         }
       }, [user]);
 
+      const reActivateRefreshTokenInterval = () => { //refreshTokenInterval stops running when window is out of focus. This should reActivate the interval when window becomes focused again
+        if (user) {
+          clearInterval(refreshTokenInterval);
+          refreshToken();
+          refreshTokenInterval = setInterval(() => { refreshToken() }, 1000 * 60 * 5);
+        }
+      }
+
+      useEffect(() => {
+        window.addEventListener('focus', reActivateRefreshTokenInterval);
+        return () => window.removeEventListener('focus', reActivateRefreshTokenInterval);
+      }, []);
+
       return (
         <UserContext.Provider value={contextValue}>
             {props.children}
