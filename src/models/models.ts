@@ -15,3 +15,18 @@ export interface CategoryModel {
     createdAt?: string;
     updatedAt?: string;
 }
+
+export interface ItemModel {
+    name: string;
+    itemId?: string;
+    description?: string;
+    category?: string;
+    tags?: string[];
+    mainImage?: string;
+    images?: string[];
+    price?: string;
+    quantity?: string;
+    type?: '#ITEM';
+    createdAt?: string;
+    updatedAt?: string;
+}

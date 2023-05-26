@@ -72,9 +72,9 @@ const CategoriesPage: React.FC = () => {
                 {
                     categories
                     &&
-                    categories.map(category => (<ListGroup.Item key={category.categoryId} className='pointer'>
+                    categories.map(category => (<ListGroup.Item key={category.categoryId}>
                         <div className='w-100 d-flex align-items-center justify-content-between'>
-                            <div className='d-flex align-items-center'>
+                            <div className='d-flex align-items-center pointer' onClick={() => navigate(`/categories/${category.categoryId}`)}>
                                 { 
                                     category.image
                                     ?
@@ -88,8 +88,8 @@ const CategoriesPage: React.FC = () => {
                                 user?.user?.role === 'admins'
                                 &&
                                 <div className='d-flex'>
-                                    <p title='delete' className='m-1' onClick={() => {setModalShown(true); setCategoryToDelete(category.categoryId!)}}> <FaTrash /> </p>
-                                    <p title='edit' className='m-1' onClick={() => navigate(`/admin/categoryform?action=update&categoryId=${category.categoryId}`)}> <FaPenFancy /> </p>
+                                    <p title='delete' className='m-1 pointer' onClick={() => {setModalShown(true); setCategoryToDelete(category.categoryId!)}}> <FaTrash /> </p>
+                                    <p title='edit' className='m-1 pointer' onClick={() => navigate(`/admin/categoryform?action=update&categoryId=${category.categoryId}`)}> <FaPenFancy /> </p>
                                 </div> 
                             }
                         </div>

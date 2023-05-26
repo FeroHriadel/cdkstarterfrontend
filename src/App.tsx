@@ -9,10 +9,13 @@ import HomePage  from './pages/HomePage';
 import SignupPage from './pages/SignupPage';
 import SigninPage from './pages/SigninPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import CategoriesPage from './pages/CategoriesPage';
 import TagsPage from './pages/TagsPage';
 import TagFormPage from './pages/TagFormPage';
+import CategoriesPage from './pages/CategoriesPage';
 import CategoryFormPage from './pages/CategoryFormPage';
+import CategoryPage from './pages/CategoryPage';
+import ItemsPage from './pages/ItemsPage';
+import ItemFormPage from './pages/ItemFormPage';
 
 
 
@@ -24,11 +27,14 @@ function App() {
         <MainNav />
         <Routes>
           <Route path='/' element={<HomePage />} />
-          <Route path='/categories' element={<CategoriesPage />} />
           <Route path='/signup' element={<SignupPage />} />
           <Route path='/signin' element={<SigninPage />} />
           <Route path='/forgotpassword' element={<ForgotPasswordPage />} />
           <Route path='/tags' element={<TagsPage />} />
+          <Route path='/categories' element={<CategoriesPage />} />
+          <Route path='/categories/:categoryId' element={<CategoryPage />} />
+          <Route path='/items/' element={<ItemsPage />} />
+          <Route path='/items/itemform' element={<ItemFormPage />} />
 
           <Route path='/admin' element={<AdminOnly />}>
             <Route path='/admin/tagform' element={<TagFormPage />} />

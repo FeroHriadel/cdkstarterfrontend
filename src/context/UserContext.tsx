@@ -47,7 +47,7 @@ const UserContextProvider: React.FC<{ children: React.ReactNode }> = (props: Rea
         await amplifyLogout();
       }
 
-      const contextValue: UserContextObj = { //sat what values context will have
+      const contextValue: UserContextObj = { //say what values context will have
         user,
         login: loginHandler,
         logout: logoutHandler
@@ -60,9 +60,11 @@ const UserContextProvider: React.FC<{ children: React.ReactNode }> = (props: Rea
       }, []);
 
       const refreshToken = async () => { //tell amplify to refresh idToken
-        const result = await refreshIdToken();
-        if (result.error) { setUser(null); removeCookie('token'); alert('Your session has expired. Please sign in again.') }
-        else { setCookie('token', result.token!); console.log('token refreshed') }
+        if (user && user.user) {
+          const result = await refreshIdToken();
+          if (result.error) { setUser(null); removeCookie('token'); alert('Your session has expired. Please sign in again.') }
+          else { setCookie('token', result.token!); console.log('token refreshed') }
+        }
       }
 
       useEffect(() => { //keep refreshing token every 5 minutes

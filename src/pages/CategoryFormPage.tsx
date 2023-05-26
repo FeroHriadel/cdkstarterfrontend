@@ -230,7 +230,7 @@ const CategoryFormPage: React.FC = () => {
                         <Form.Group className="mb-3" controlId="formDescription">
                             <Form.Label>Description</Form.Label>
                             <Form.Control 
-                                type="text" 
+                                as="textarea"
                                 placeholder="Category description"
                                 value={description}
                                 name='description'
@@ -257,6 +257,7 @@ const CategoryFormPage: React.FC = () => {
                                 name="image-input"
                                 id="image-input"
                                 type="file"
+                                max="1"
                                 accept="image/*"
                                 className="w-100"
                                 onChange={onImageUpload}
