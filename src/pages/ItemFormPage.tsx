@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ReactReduxContext, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchCategories } from '../actions/categoryActions';
 import { Form, Button } from 'react-bootstrap';
@@ -38,19 +38,22 @@ const ItemFormPage = () => {
     const [mainImageData, setMainImageData] = useState<ImageState>(imageInitialState);
     const [selectedImages, setSelectedImages] = useState<any[]>([]);
     const [imagesData, setImagesData] = useState<ImageState[]>([]);
+    const [imagesMessage, setImagesMessage] = useState('');
 
 
 
 
     //METHODS
+    //get categories
     useEffect(() => {
         dispatch(fetchCategories());
     }, [dispatch]);
 
+    //form input handler
     const handleChange = (e:React.ChangeEvent<HTMLInputElement>) => {
         setValues({...values, [e.target.name]: e.target.value});
     };
-
+    //form tags handler
     const handleTags = (tagId: string) => {
         let selectedTags = [...tags!];
         if (selectedTags.includes(tagId)) selectedTags = selectedTags.filter(t => t !== tagId);
@@ -59,6 +62,7 @@ const ItemFormPage = () => {
         console.log(tagId, selectedTags);
     }
 
+    //main image input handler
     const onMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = (e.target && e.target.files && e.target.files.length) ? e.target.files[0] : null;
         if (file) {
@@ -72,20 +76,17 @@ const ItemFormPage = () => {
         }
     }
 
+    //remove main image
     const removeMainImage = () => {
         setMainImageData(imageInitialState);
         setSelectedMainImage(null);
     }
 
-
-
-
-
     /* multiple image preview calls for a different approach => with the approach like in onMainImageUpload()
      it crashes with `Failed to execute 'readAsDataURL' on 'FileReader': parameter 1 is not of type 'Blob'.` */
 
-    //gets file and returns base64 string => is then used  by onImagesUpload() forEach file
-    const fileToBase64 = (file: File | Blob): Promise<string> =>
+    //file to b64 converter
+    const fileToBase64 = (file: File | Blob): Promise<string> => //gets file and returns base64 string => is then used  by onImagesUpload() forEach file
         new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (event) => { resolve(reader.result as string); };
@@ -93,8 +94,15 @@ const ItemFormPage = () => {
             reader.onerror = reject;
     });
 
-    //uses fileToBase64() above for eaxch selected file:
-    const onImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    //multiple images upload handler
+    const onImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { //uses fileToBase64() above for eaxch selected file:
+        const files = (e.target && e.target.files && e.target.files.length) ? e.target.files : null;
+        if (files && files.length > 10) {
+            setImagesMessage('Max 10 images limit exceeded');
+            setTimeout(() => { setImagesMessage('') }, 1500);
+            return
+        }
+
         const tempFileList: { fileName: string, base64String: string }[] = []; //will push resulting data here
         await Promise.all(
             [].map.call(e.target.files, async (file: File) => { //using promises pushes file data in the array above
@@ -108,17 +116,20 @@ const ItemFormPage = () => {
         setImagesData(tempFileList.map(item => { return {fileName: item.fileName, imageFile: item.base64String}}));
     }
 
- 
+    //remove from additional images
+    const removeFromSelectedImages = (idx: number) => {
+        let newSelectedImages = [...selectedImages]; newSelectedImages.splice(idx, 1); setSelectedImages(newSelectedImages);
+        let newImagesData = [...imagesData]; newImagesData.splice(idx, 1); setImagesData(newImagesData);
 
+    }
 
-    
+    //submit handler
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log(values);
     }
 
     
-
 
     //RENDER
     return (
@@ -211,17 +222,22 @@ const ItemFormPage = () => {
                             {/* additional images */}
                             <React.Fragment>
                                 <Form.Label className='w-100'>Additional Images</Form.Label>
-                                {
-                                    selectedImages.length > 0
-                                    &&
-                                    selectedImages.map((image, idx) => (
-                                        <div className='selected-image-thumbnail' key={`selected-image-${idx}`} style={{backgroundImage: `url(${image})`}}>
-                                            <div className='remove-image-button'>
-                                                <p>X</p>
+                                <div className='selected-image-thumbnails-container'>
+                                    {
+                                        selectedImages.length > 0
+                                        &&
+                                        selectedImages.map((image, idx) => (
+                                            <div className='selected-image-thumbnail' key={`selected-image-${idx}`} style={{backgroundImage: `url(${image})`}}>
+                                                <div className='remove-image-button' onClick={() => {removeFromSelectedImages(idx)}}>
+                                                    <p>x</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
-                                }
+                                        ))
+                                    }
+                                </div>
+                                
+                                <p className='text-center message'>{imagesMessage}</p>
+                                
                                 <label className="pointer w-100 btn btn-primary mb-3">
                                     Upload Images
                                     <input 
@@ -238,8 +254,35 @@ const ItemFormPage = () => {
                                 </label>
                             </React.Fragment>
 
+                            {/* price */}
+                            <Form.Group className="mb-3" controlId="formPrice">
+                                <Form.Label>Price</Form.Label>
+                                <Form.Control 
+                                    type="number"
+                                    placeholder="Item price"
+                                    value={values.price}
+                                    name='price'
+                                    onChange={handleChange}
+                                    disabled={message !== ''}
+                                />
+                            </Form.Group>
+
+                            
+                            {/* quantity */}
+                            <Form.Group className="mb-3" controlId="formQuantity">
+                                <Form.Label>Price</Form.Label>
+                                <Form.Control 
+                                    type="number"
+                                    placeholder="Quantity"
+                                    value={values.quantity}
+                                    name='quantity'
+                                    onChange={handleChange}
+                                    disabled={message !== ''}
+                                />
+                            </Form.Group>
+
                             {/* submit button */}
-                            <Button variant="primary" type="submit" className='col-12' disabled={message !== ''}>
+                            <Button variant="primary" type="submit" className='col-12 mb-5' disabled={message !== ''}>
                                 Submit
                             </Button>
                         </Form>
