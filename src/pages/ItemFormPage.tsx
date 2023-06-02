@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { UserContext } from '../context/UserContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchCategories } from '../actions/categoryActions';
 import { Form, Button } from 'react-bootstrap';
 import { ItemModel, CategoryModel } from '../models/models';
 import TagsSelect from '../components/forms/TagsSelect';
+import { changeMessage } from '../slices/messageSlice';
+import { saveItem } from '../actions/itemActions';
 
 
 
@@ -30,13 +33,17 @@ const imageInitialState: ImageState = {fileName: '', imageFile: null};
 //REACT COMPONENT
 const ItemFormPage = () => {
     //VALUES
+    const [values, setValues] = useState<any>(itemInitialState); 
+    const [formDisabled, setFormDisabled] = useState(false);
     const dispatch: AppDispatch = useDispatch(); //dispatch like e.g.: dispatch(changeMessage('No tags found'));
     const message = useSelector((state: RootState) => state.message);
     const categories: CategoryModel[] = useSelector((state: RootState) => state.categories);
-    const [values, setValues] = useState<ItemModel>(itemInitialState); const { tags } = values;
+    const { tags } = values; //thesr what user selected, TagsSelect has all tags from BE
+    const { user } = useContext(UserContext);
+    const token = user?.token;
     const [selectedMainImage, setSelectedMainImage] = useState<any>(null);
-    const [mainImageData, setMainImageData] = useState<ImageState>(imageInitialState);
     const [selectedImages, setSelectedImages] = useState<any[]>([]);
+    const [mainImageData, setMainImageData] = useState<ImageState>(imageInitialState);
     const [imagesData, setImagesData] = useState<ImageState[]>([]);
     const [imagesMessage, setImagesMessage] = useState('');
 
@@ -126,8 +133,43 @@ const ItemFormPage = () => {
     //submit handler
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(values);
+        if (!mainImageData.fileName && imagesData.length > 0) {
+            dispatch(changeMessage('Canno submit additional images without main image'));
+            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+            return
+        }
+
+        if (!values.name) {
+            dispatch(changeMessage('Name is required'));
+            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+            return
+        }
+
+        if (!values.category) {
+            dispatch(changeMessage('Category is required'));
+            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+            return
+        }
+
+        if (!token) {
+            dispatch(changeMessage('You must be signed in to submit an item'));
+            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+            return
+        }
+
+        dispatch(saveItem(values, mainImageData, imagesData, token!));
     }
+
+    //clear form when item saved successfully
+    useEffect(() => {
+        if (message === 'Item saved') {
+            setValues(itemInitialState);
+            setSelectedMainImage(null);
+            setSelectedImages([]);
+            setMainImageData(imageInitialState);
+            setImagesData([]);
+        }
+    }, [message])
 
     
 
@@ -165,7 +207,7 @@ const ItemFormPage = () => {
                             {/* category select */}
                             <Form.Group className="mb-3" controlId="formCategory">
                                 <Form.Label>Category*</Form.Label>
-                                <Form.Select aria-label="Default select example" onChange={(e) => {setValues({...values, category: e.target.value})}}>
+                                <Form.Select onChange={(e) => {setValues({...values, category: e.target.value})}} disabled={message !== ''} >
                                     <option value=''>No category selected</option>
                                     {
                                         categories.map(c => (
@@ -178,8 +220,10 @@ const ItemFormPage = () => {
 
                             {/* tags select */}
                             <React.Fragment>
-                                <Form.Label>Tags</Form.Label>
-                                <TagsSelect handleTags={handleTags} tags={tags!} /> <div className='mb-3'></div>
+                                <div style={{pointerEvents: message !== '' ? 'none' : 'auto'}} className="w-100">
+                                    <Form.Label>Tags</Form.Label>
+                                    <TagsSelect handleTags={handleTags} tags={tags! as any} /> <div className='mb-3'></div>
+                                </div>
                             </React.Fragment>
 
                             {/* description */}
@@ -280,6 +324,11 @@ const ItemFormPage = () => {
                                     disabled={message !== ''}
                                 />
                             </Form.Group>
+
+                            {/* bottom message */}
+                            <div style={{height: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
+                                <p className='text-center message'>{message}</p>
+                            </div>
 
                             {/* submit button */}
                             <Button variant="primary" type="submit" className='col-12 mb-5' disabled={message !== ''}>

@@ -1,3 +1,4 @@
+//ITEM IMAGES SELECT ELEMENT:
 .selected-image-thumbnails-container {
     width: 100%;
     display: flex;
@@ -34,6 +35,39 @@
             padding: 0;
             color: white;
             font-size: 10px;
+        }
+    }
+}
+
+
+
+//ITEM'S CATEGORY AND TAGS AS CIRCLES DISPLAY
+.item-circles-container {
+    width: 100%;
+    display: flex;
+    // justify-content: center;
+    flex-wrap: wrap;
+
+    .category-or-tag-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin: 2.5px 5px;
+        background-color: #ccc;
+        transform: rotate(-20deg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        & > * {
+            word-break: break-all;
+            color: black;
+            font-size: 0.75rem;
+            text-align: center;
+            margin: 2px;
+            padding: 0;
+            line-height: 1.1;
+            user-select: none;
         }
     }
 }

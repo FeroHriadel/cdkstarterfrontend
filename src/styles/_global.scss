@@ -10,7 +10,7 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    min-width: 100vw;
+    width: 100vw;
 }
 
 p, h5, h6 {
@@ -28,4 +28,9 @@ a:link {
 
 .pointer {
     cursor: pointer;
+}
+
+.row {
+    margin-right: 0px;
+    margin-left: 0px;
 }

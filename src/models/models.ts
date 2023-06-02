@@ -20,8 +20,8 @@ export interface ItemModel {
     name: string;
     itemId?: string;
     description?: string;
-    category?: string;
-    tags?: string[];
+    category?: string | {category: string, name: string, image?: string};
+    tags?: string[] | {tagId: string, name: string}[];
     mainImage?: string;
     images?: string[];
     price?: string;
