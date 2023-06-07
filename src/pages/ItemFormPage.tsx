@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchCategories } from '../actions/categoryActions';
@@ -46,6 +47,7 @@ const ItemFormPage = () => {
     const [mainImageData, setMainImageData] = useState<ImageState>(imageInitialState);
     const [imagesData, setImagesData] = useState<ImageState[]>([]);
     const [imagesMessage, setImagesMessage] = useState('');
+    const navigate = useNavigate();
 
 
 
@@ -66,7 +68,6 @@ const ItemFormPage = () => {
         if (selectedTags.includes(tagId)) selectedTags = selectedTags.filter(t => t !== tagId);
         else selectedTags.push(tagId);
         setValues({...values, tags: selectedTags});
-        console.log(tagId, selectedTags);
     }
 
     //main image input handler
@@ -175,8 +176,9 @@ const ItemFormPage = () => {
 
     //RENDER
     return (
-        <div className='container text-center'>
-            <h1>Create Item Page</h1>
+        <div className='container'>
+            <h1 className='text-center'>Create Item Page</h1>
+            <Button variant='secondary' onClick={() => navigate(-1)}>Go Back</Button>
 
             <br /><br /><br />
 
@@ -191,6 +193,7 @@ const ItemFormPage = () => {
                 <div className="row">
                     <div className="col-md-6 offset-md-3">
                         <Form onSubmit={handleSubmit} style={{textAlign: 'left'}}>
+                            
                             {/* name */}
                             <Form.Group className="mb-3" controlId="formName">
                                 <Form.Label>Name*</Form.Label>

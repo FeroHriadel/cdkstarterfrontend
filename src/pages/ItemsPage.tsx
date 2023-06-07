@@ -12,6 +12,7 @@ import { fetchItems } from '../actions/itemActions';
 import { ItemModel } from '../models/models';
 
 import { Button } from 'react-bootstrap';
+import FilterAccordion from '../components/FilterAccordion';
 
 
 
@@ -71,12 +72,12 @@ const ItemsPage = () => {
     const renderItems = useCallback(() => {
         return (
                     items.map(item => (
-                        <div className='single-item-container mb-5 col-12' key={item.itemId} style={{position: `relative`}} >
+                        <div className='single-item-container mb-5 col-md-4' key={item.itemId} style={{position: `relative`}} >
                             {/* ITEM IMAGE */}
                             { 
                                 item.mainImage
                                 ?
-                                <img src={item.mainImage} style={{width: `100%`}} />
+                                <div style={{width: '100%', height: `400px`, background: `url(${item.mainImage}) no-repeat center center/cover`}} />
                                 :
                                 <div className='d-flex align-items-center justify-content-center w-100' style={{height: `400px`, background: '#eee'}} /> 
                             }
@@ -85,7 +86,7 @@ const ItemsPage = () => {
                             <h4 style={{position: `absolute`, top: 5, left: 25, textShadow: '0 0 5px #eee'}}>{item.name}</h4>
 
                             {/* CATEGORY AND TAGS CIRCLES */}
-                            <div className='item-circles-container my-1' style={{position: `absolute`, bottom: 5, left: 25}}>
+                            <div className='item-circles-container my-1' style={{position: `absolute`, bottom: 5, left: 25, width: `75%`}}>
                                 { 
                                     populateItemsCategory(item.category as string).image 
                                     ? 
@@ -117,16 +118,26 @@ const ItemsPage = () => {
             <br /><br /><br />
 
             {
+                categories && categories.length > 0
+                &&
+                items && items.length > 0
+                &&
+                <FilterAccordion />
+            }
+
+            {
                 user?.user?.role === 'admins'
                 &&
-                <Button variant="primary" className="mb-5" onClick={() => navigate('/admin/itemform')}>Create New Item</Button>
+                <Button variant="primary" className="mb-5 mt-3 col-12" onClick={() => navigate('/admin/itemform')}>Create New Item</Button>
             }
 
             <div className='items-container row'>
                 {
                     items && tags && categories
                     &&
-                    renderItems()
+                    <div className="row">
+                        {renderItems()}
+                    </div>
                 }
             </div>
         </div>
