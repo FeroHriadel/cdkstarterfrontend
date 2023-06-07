@@ -1,4 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
+import { UserContext } from '../context/UserContext';
+
 import { useNavigate } from 'react-router-dom';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -8,6 +10,8 @@ import { fetchCategories } from '../actions/categoryActions';
 import { fetchItems } from '../actions/itemActions';
 
 import { ItemModel } from '../models/models';
+
+import { Button } from 'react-bootstrap';
 
 
 
@@ -21,6 +25,7 @@ const ItemsPage = () => {
     const categories = useSelector((state: RootState) => state.categories);
     const items = useSelector((state: RootState) => state.items);
     const [message, setMessage] = useState('');
+    const { user } = useContext(UserContext);
 
 
 
@@ -77,7 +82,7 @@ const ItemsPage = () => {
                             }
 
                             {/* ITEM NAME */}
-                            <h4 style={{position: `absolute`, top: 5, left: 25}}>{item.name}</h4>
+                            <h4 style={{position: `absolute`, top: 5, left: 25, textShadow: '0 0 5px #eee'}}>{item.name}</h4>
 
                             {/* CATEGORY AND TAGS CIRCLES */}
                             <div className='item-circles-container my-1' style={{position: `absolute`, bottom: 5, left: 25}}>
@@ -111,7 +116,11 @@ const ItemsPage = () => {
 
             <br /><br /><br />
 
-            <button onClick={() => navigate('/items/itemform')}>form</button>
+            {
+                user?.user?.role === 'admins'
+                &&
+                <Button variant="primary" className="mb-5" onClick={() => navigate('/admin/itemform')}>Create New Item</Button>
+            }
 
             <div className='items-container row'>
                 {

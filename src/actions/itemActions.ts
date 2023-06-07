@@ -50,6 +50,189 @@ export const saveItem = (
         dispatch(changeMessage(`Cannot save additional images if there's no main image`));
         setTimeout(() => { dispatch(changeMessage('Saving main image...')); }, 2000);
         return
+    }
+
+    //if main image ==> get url for mainImage
+    if (mainImageData?.fileName) {
+        dispatch(changeMessage('Saving main image...'));
+        let data = await getSignedUrl(mainImageData.fileName, token);
+        if (data.error || !data.url) {
+            dispatch(changeMessage('Error: Main Image Upload Failed'));
+            setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+            return
+
+        //push mainImage to signedUrl
+        } else {
+            let result = await pushImageToSignedUrl(mainImageData.imageFile, data.url);
+            if (result.objectUrl) {
+                item.mainImage = result.objectUrl;
+                dispatch(changeMessage('Main Image saved...'));
+
+                //after mainImage saved, save additional images if any...
+
+                if (imagesData && imagesData.length > 0) {
+                    //...get signed urls for each img...
+                    dispatch(changeMessage('Saving additional images'));
+                    let presignedUrls: string[] = [];
+                    Promise.all(imagesData.map(async img => { return await getSignedUrl(img.fileName, token)}))
+                    .then(values => {
+                        values.forEach(value => presignedUrls.push(value.url));
+                        if (presignedUrls.length !== imagesData.length) {
+                            dispatch(changeMessage('Error: Images Upload Failed'));
+                            setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                            return
+                        };
+                        presignedUrls.forEach(link => {
+                            if (typeof link !== 'string' || !link.includes('https')) {
+                                dispatch(changeMessage('Error: Images Upload Failed'));
+                                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                return
+                            }
+                        });
+                        
+                        //...push to signed urls...
+                        Promise.all(imagesData.map(async (imag, idx) => { 
+                            return await pushImageToSignedUrl(imag.imageFile, presignedUrls[idx])
+                        }))
+                        .then(vals => {
+                            vals.forEach(val => {
+                                if (!val.objectUrl) {
+                                    dispatch(changeMessage('Error: Images Upload Failed'));
+                                    setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                    return
+                                }
+                            });
+
+                            //...save item with main image and additional images
+                            vals.forEach(vlue => item.images?.push(vlue.objectUrl!));
+                            dispatch(changeMessage(`Saving item with multiple images...`));
+                            fetch(`${api}/items`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify(item)
+                            })
+                            .then(resp => resp.json())
+                            .then(respData => {
+                                if (respData?.error) {
+                                    console.log(respData.error);
+                                    dispatch(changeMessage(`Saving Item failed`)); 
+                                    setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                    return; 
+                                }
+                                else {
+                                    dispatch(changeMessage(`Item saved`));
+                                    setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                }
+                            })
+                            .catch(error => {
+                                console.log(error);
+                                dispatch(changeMessage(`Saving Item failed`)); 
+                                setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                return; 
+                            })
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            dispatch(changeMessage('Error: Images Upload Failed'));
+                            setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                            return
+                        })
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        dispatch(changeMessage('Error: Images Upload Failed'));
+                        setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                        return
+                    })
+                }
+                
+                //save item ==> only mainImage, no additional images
+                else {
+                    dispatch(changeMessage(`Saving item and main image...`));
+                    fetch(`${api}/items`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(item)
+                    }).then(resp => resp.json())
+                    .then(respData => {
+                        if (respData?.error) {
+                            console.log(respData.error);
+                            dispatch(changeMessage(`Saving Item failed`)); 
+                            setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                            return; 
+                        }
+                        else {
+                            dispatch(changeMessage(`Item saved`));
+                            setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        dispatch(changeMessage(`Saving Item failed`)); 
+                        setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                        return; 
+                    })
+                }
+            }
+
+            //if mainImage upload failed
+            else {
+                dispatch(changeMessage('Error: Main Image Upload Failed'));
+                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                return
+            }
+        }
+    } 
+    
+    //save item without main image
+    else {
+        //save item without main image
+        dispatch(changeMessage('Saving Item without images...'));
+        fetch(`${api}/items`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+        }).then(resp => resp.json())
+        .then(respData => {
+            if (respData?.error) {
+                console.log(respData.error);
+                dispatch(changeMessage(`Saving Item failed`)); 
+                setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                return; 
+            }
+            else {
+                dispatch(changeMessage(`Item saved`));
+                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            dispatch(changeMessage(`Saving Item failed`)); 
+            setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+            return; 
+        })
+    }
+}
+
+
+
+
+
+
+
+export const saveItemOriginal = (
+    item: ItemModel, 
+    mainImageData: {fileName: string, imageFile: any} | null, 
+    imagesData: {fileName: string, imageFile: any}[] | null,
+    token: string
+) => async (dispatch: any) => {
+    
+    //additional images not possible if no main image
+    dispatch(changeMessage('Saving Item...'));
+    if (!mainImageData?.fileName && imagesData && imagesData.length > 0) {
+        dispatch(changeMessage(`Cannot save additional images if there's no main image`));
+        setTimeout(() => { dispatch(changeMessage('Saving main image...')); }, 2000);
+        return
     } 
 
     //if main image ==> get url for mainImage
@@ -85,7 +268,33 @@ export const saveItem = (
                                             if (rslt.objectUrl) {
                                                 item.images?.push(rslt.objectUrl)
                                                 dispatch(changeMessage(`Image ${idx + 1} saved...`));
-
+                                                if (idx === imagesData.length - 1) {
+                                                    //save item with main image and additional images
+                                                    dispatch(changeMessage('Saving Item with main and additional images...'));
+                                                    fetch(`${api}/items`, {
+                                                        method: 'POST',
+                                                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify(item)
+                                                    }).then(resp => resp.json())
+                                                    .then(respData => {
+                                                        if (respData?.error) {
+                                                            console.log(respData.error);
+                                                            dispatch(changeMessage(`Saving Item failed`)); 
+                                                            setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                                            return; 
+                                                        }
+                                                        else {
+                                                            dispatch(changeMessage(`Item saved`));
+                                                            setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                                        }
+                                                    })
+                                                    .catch(error => {
+                                                        console.log(error);
+                                                        dispatch(changeMessage(`Saving Item failed`)); 
+                                                        setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                                        return; 
+                                                    })
+                                                }
                                             } else {
                                                 dispatch(changeMessage(`Error: Image ${idx + 1} Upload Failed`));
                                                 setTimeout(() => {dispatch(changeMessage(''))}, 2000);
@@ -95,32 +304,6 @@ export const saveItem = (
                                     }
                                 })
                             });
-
-                            //save item with main image and additional images
-                            dispatch(changeMessage('Saving Item with main and additional images...'));
-                            fetch(`${api}/items`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                                body: JSON.stringify(item)
-                            }).then(resp => resp.json())
-                            .then(respData => {
-                                if (respData?.error) {
-                                    console.log(respData.error);
-                                    dispatch(changeMessage(`Saving Item failed`)); 
-                                    setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
-                                    return; 
-                                }
-                                else {
-                                    dispatch(changeMessage(`Item saved`));
-                                }
-                            })
-                            .catch(error => {
-                                console.log(error);
-                                dispatch(changeMessage(`Saving Item failed`)); 
-                                setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
-                                return; 
-                            })
-
 
                         //save item with mainImage, no additionalImages
                         } else {
@@ -139,6 +322,7 @@ export const saveItem = (
                                 }
                                 else {
                                     dispatch(changeMessage(`Item saved`));
+                                    setTimeout(() => {dispatch(changeMessage(''))}, 2000);
                                 }
                             })
                             .catch(error => {
@@ -177,6 +361,7 @@ export const saveItem = (
             }
             else {
                 dispatch(changeMessage(`Item saved`));
+                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
             }
         })
         .catch(error => {
@@ -188,3 +373,172 @@ export const saveItem = (
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+export const saveItem = (
+    item: ItemModel, 
+    mainImageData: {fileName: string, imageFile: any} | null, 
+    imagesData: {fileName: string, imageFile: any}[] | null,
+    token: string
+) => async (dispatch: any) => {
+    
+    //additional images not possible if no main image
+    dispatch(changeMessage('Saving Item...'));
+    if (!mainImageData?.fileName && imagesData && imagesData.length > 0) {
+        dispatch(changeMessage(`Cannot save additional images if there's no main image`));
+        setTimeout(() => { dispatch(changeMessage('Saving main image...')); }, 2000);
+        return
+    } 
+
+    //if main image ==> get url for mainImage
+    if (mainImageData?.fileName) {
+        dispatch(changeMessage('Saving main image...'));
+        getSignedUrl(mainImageData.fileName, token).then(data => {
+            if (data.error || !data.url) {
+                dispatch(changeMessage('Error: Main Image Upload Failed'));
+                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                return
+            
+            //push mainImage to signedUrl
+            } else {
+                pushImageToSignedUrl(mainImageData.imageFile, data.url).then(result => {
+                    if (result.objectUrl) {
+                        item.mainImage = result.objectUrl;
+                        dispatch(changeMessage('Main Image saved...'));
+
+                        //after mainImage saved, save additional images...
+                        if (imagesData && imagesData.length > 0) {
+                            //...forEach additional image...
+                            imagesData.forEach((img, idx) => {
+                                //...get signed url...
+                                dispatch(changeMessage(`Saving additional image ${idx + 1}...`));
+                                getSignedUrl(img.fileName, token).then(dta => {
+                                    if (dta.error || !dta.url) {
+                                        dispatch(changeMessage(`Error: Image ${idx + 1}  upload failed`));
+                                        setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                        return
+                                    } else {
+                                        //...and push file to the url
+                                        pushImageToSignedUrl(img.imageFile, dta.url).then(rslt => {
+                                            if (rslt.objectUrl) {
+                                                item.images?.push(rslt.objectUrl)
+                                                dispatch(changeMessage(`Image ${idx + 1} saved...`));
+                                                if (idx === imagesData.length - 1) {
+                                                    //save item with main image and additional images
+                                                    dispatch(changeMessage('Saving Item with main and additional images...'));
+                                                    fetch(`${api}/items`, {
+                                                        method: 'POST',
+                                                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify(item)
+                                                    }).then(resp => resp.json())
+                                                    .then(respData => {
+                                                        if (respData?.error) {
+                                                            console.log(respData.error);
+                                                            dispatch(changeMessage(`Saving Item failed`)); 
+                                                            setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                                            return; 
+                                                        }
+                                                        else {
+                                                            dispatch(changeMessage(`Item saved`));
+                                                            setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                                        }
+                                                    })
+                                                    .catch(error => {
+                                                        console.log(error);
+                                                        dispatch(changeMessage(`Saving Item failed`)); 
+                                                        setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                                        return; 
+                                                    })
+                                                }
+                                            } else {
+                                                dispatch(changeMessage(`Error: Image ${idx + 1} Upload Failed`));
+                                                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                                return
+                                            }
+                                        })
+                                    }
+                                })
+                            });
+
+                        //save item with mainImage, no additionalImages
+                        } else {
+                            dispatch(changeMessage(`Saving item and main image...`));
+                            fetch(`${api}/items`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify(item)
+                            }).then(resp => resp.json())
+                            .then(respData => {
+                                if (respData?.error) {
+                                    console.log(respData.error);
+                                    dispatch(changeMessage(`Saving Item failed`)); 
+                                    setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                    return; 
+                                }
+                                else {
+                                    dispatch(changeMessage(`Item saved`));
+                                    setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                                }
+                            })
+                            .catch(error => {
+                                console.log(error);
+                                dispatch(changeMessage(`Saving Item failed`)); 
+                                setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                                return; 
+                            })
+                        }
+
+                    //saving main image failed
+                    } else {
+                        dispatch(changeMessage('Error: Main Image Upload Failed'));
+                        setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+                        return
+                    }
+                })
+            }
+        })
+    }
+
+    else {
+        //save item without main image
+        dispatch(changeMessage('Saving Item without images...'));
+        fetch(`${api}/items`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+        }).then(resp => resp.json())
+        .then(respData => {
+            if (respData?.error) {
+                console.log(respData.error);
+                dispatch(changeMessage(`Saving Item failed`)); 
+                setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+                return; 
+            }
+            else {
+                dispatch(changeMessage(`Item saved`));
+                setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            dispatch(changeMessage(`Saving Item failed`)); 
+            setTimeout(() => {dispatch(changeMessage(``))}, 2000); 
+            return; 
+        })
+
+    }
+}
+*/

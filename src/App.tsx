@@ -34,11 +34,11 @@ function App() {
           <Route path='/categories' element={<CategoriesPage />} />
           <Route path='/categories/:categoryId' element={<CategoryPage />} />
           <Route path='/items/' element={<ItemsPage />} />
-          <Route path='/items/itemform' element={<ItemFormPage />} />
 
           <Route path='/admin' element={<AdminOnly />}>
             <Route path='/admin/tagform' element={<TagFormPage />} />
             <Route path='/admin/categoryform' element={<CategoryFormPage />} />
+            <Route path='/admin/itemform' element={<ItemFormPage />} />
           </Route>
 
           <Route path='*' element={<HomePage />} />

@@ -15,6 +15,7 @@ const MainNav: React.FC = () => {
   //RENDER
   return (
     <nav className='main-nav'>
+        <div className='container'>
         <div className='left-side'>
             <img src={cdkImage} alt="logo" className='logo' onClick={() => navigate('/')} title="Home" />
 
@@ -24,6 +25,9 @@ const MainNav: React.FC = () => {
 
             <Link to='/categories'>
                 <p className='link'>Categories</p>
+            </Link>
+            <Link to='/items'>
+                <p className='link'>Items</p>
             </Link>
         </div>
 
@@ -43,6 +47,7 @@ const MainNav: React.FC = () => {
               </Link>
             </React.Fragment>
           }
+        </div>
         </div>
     </nav>
   )
