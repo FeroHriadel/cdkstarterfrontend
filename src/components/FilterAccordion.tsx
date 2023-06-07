@@ -9,7 +9,7 @@ import { Form } from 'react-bootstrap';
 
 
 
-const initialValues = {category: '', tag: ''};
+const initialValues = {category: '', tag: '', order: '', namesearch: ''};
 
 
 
@@ -32,6 +32,8 @@ function FilterAccordion() {
 
     if (values.category === '') delete query?.category;
     if (values.tag === '') delete query?.tag;
+    if (values.order === '') delete query?.order;
+    if (values.namesearch === '') delete query?.namesearch;
     if (Object.keys(query).length === 0) query = null;
 
     dispatch(fetchItems(query));
@@ -52,7 +54,7 @@ function FilterAccordion() {
                 {/* CATEGORY */}
                 <Form.Group className="mb-3" controlId="formCategory">
                   <Form.Label>Category</Form.Label>
-                  <Form.Select value={values.category} onChange={(e) => {setValues({...values, category: e.target.value})}} >
+                  <Form.Select value={values.category} onChange={(e) => {setValues({...values, category: e.target.value, namesearch: ''})}} >
                       <option value=''>No category selected</option>
                       {
                           categories.map(c => (
@@ -63,9 +65,9 @@ function FilterAccordion() {
                 </Form.Group>
 
                 {/* TAG */}
-                <Form.Group className="mb-3" controlId="formCategory">
+                <Form.Group className="mb-3" controlId="formTag">
                   <Form.Label>Tag</Form.Label>
-                  <Form.Select value={values.tag} onChange={(e) => {setValues({...values, tag: e.target.value})}} >
+                  <Form.Select value={values.tag} onChange={(e) => {setValues({...values, tag: e.target.value, namesearch: ''})}} >
                       <option value=''>No tag selected</option>
                       {
                           tags.map(t => (
@@ -73,6 +75,28 @@ function FilterAccordion() {
                           ))
                       }
                   </Form.Select>
+                </Form.Group>
+
+                {/* ORDER */}
+                <Form.Group className="mb-3" controlId="formOrder">
+                  <Form.Label>Order</Form.Label>
+                  <Form.Select value={values.order} onChange={(e) => {setValues({...values, order: e.target.value, namesearch: ''})}} >
+                      <option value=''>alphabetical</option>
+                      <option value='latest'>latest</option>
+                      <option value='oldest'>oldest</option>
+                  </Form.Select>
+                </Form.Group>
+
+                {/* NAME SEARCH */}
+                <Form.Group className="mb-3" controlId="formNameSearch">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    placeholder="Name includes"
+                    value={values.namesearch}
+                    name='namesearch'
+                    onChange={(e) => {setValues({...initialValues, namesearch: e.target.value})}}
+                  />
                 </Form.Group>
               </Form>
             </div>

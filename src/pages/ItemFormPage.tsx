@@ -210,7 +210,7 @@ const ItemFormPage = () => {
                             {/* category select */}
                             <Form.Group className="mb-3" controlId="formCategory">
                                 <Form.Label>Category*</Form.Label>
-                                <Form.Select onChange={(e) => {setValues({...values, category: e.target.value})}} disabled={message !== ''} >
+                                <Form.Select value={values.category} onChange={(e) => {setValues({...values, category: e.target.value})}} disabled={message !== ''} >
                                     <option value=''>No category selected</option>
                                     {
                                         categories.map(c => (
