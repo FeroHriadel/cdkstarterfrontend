@@ -120,8 +120,6 @@ const ItemsPage = () => {
             {
                 categories && categories.length > 0
                 &&
-                items && items.length > 0
-                &&
                 <FilterAccordion />
             }
 

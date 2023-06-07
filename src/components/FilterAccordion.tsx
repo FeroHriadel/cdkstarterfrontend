@@ -9,7 +9,7 @@ import { Form } from 'react-bootstrap';
 
 
 
-const initialValues = {category: ''};
+const initialValues = {category: '', tag: ''};
 
 
 
@@ -27,10 +27,14 @@ function FilterAccordion() {
   //METHODS
   useEffect(() => {
     if (values === initialValues) return //to prevent unnecessary initial get items call
+
     let query: {[key: string]: string} | null = {...values};
+
     if (values.category === '') delete query?.category;
+    if (values.tag === '') delete query?.tag;
     if (Object.keys(query).length === 0) query = null;
-    dispatch(fetchItems(query))
+
+    dispatch(fetchItems(query));
   }, [values])
 
 
@@ -44,6 +48,8 @@ function FilterAccordion() {
           <div className="row">
             <div className="col-md-6 offset-md-3">
               <Form style={{textAlign: 'left'}}>
+
+                {/* CATEGORY */}
                 <Form.Group className="mb-3" controlId="formCategory">
                   <Form.Label>Category</Form.Label>
                   <Form.Select value={values.category} onChange={(e) => {setValues({...values, category: e.target.value})}} >
@@ -51,6 +57,19 @@ function FilterAccordion() {
                       {
                           categories.map(c => (
                               <option value={c.categoryId} key={c.categoryId}>{c.name}</option>
+                          ))
+                      }
+                  </Form.Select>
+                </Form.Group>
+
+                {/* TAG */}
+                <Form.Group className="mb-3" controlId="formCategory">
+                  <Form.Label>Tag</Form.Label>
+                  <Form.Select value={values.tag} onChange={(e) => {setValues({...values, tag: e.target.value})}} >
+                      <option value=''>No tag selected</option>
+                      {
+                          tags.map(t => (
+                              <option value={t.tagId} key={t.tagId}>{t.name}</option>
                           ))
                       }
                   </Form.Select>
