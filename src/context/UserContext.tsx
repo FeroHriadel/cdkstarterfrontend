@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUserAndToken, removeCookie, setCookie } from '../helpers/cookie';
+import { getUserAndToken, removeCookie, setCookie, removeUserAndToken } from '../helpers/cookie';
 import { logout as amplifyLogout, refreshIdToken } from '../actions/amplifyActions'
 
 
@@ -43,7 +43,7 @@ const UserContextProvider: React.FC<{ children: React.ReactNode }> = (props: Rea
     
       const logoutHandler = async () => { //say what logout will do
         setUser(null);
-        removeCookie('token');
+        removeUserAndToken();
         await amplifyLogout();
       }
 
@@ -62,13 +62,22 @@ const UserContextProvider: React.FC<{ children: React.ReactNode }> = (props: Rea
       const refreshToken = async () => { //tell amplify to refresh idToken
         if (user && user.user) {
           const result = await refreshIdToken();
-          if (result.error) { setUser(null); removeCookie('token'); alert('Your session has expired. Please sign in again.') }
-          else { setCookie('token', result.token!); console.log('token refreshed') }
+          if (result.error || !result.token) {
+            setUser(null); 
+            removeUserAndToken(); 
+            await amplifyLogout(); 
+            clearInterval(refreshTokenInterval); 
+            alert('Your session has expired. Please sign in again.')
+          }
+          else {
+            setCookie('token', result.token!); 
+            console.log('token refreshed')
+          }
         }
       }
 
       useEffect(() => { //keep refreshing token every 5 minutes
-        if (user) {
+        if (user?.user?.email) {
           clearInterval(refreshTokenInterval);
           refreshToken();
           refreshTokenInterval = setInterval(() => { refreshToken() }, 1000 * 60 * 5);
@@ -76,10 +85,12 @@ const UserContextProvider: React.FC<{ children: React.ReactNode }> = (props: Rea
       }, [user]);
 
       const reActivateRefreshTokenInterval = () => { //refreshTokenInterval stops running when window is out of focus. This should reActivate the interval when window becomes focused again
-        if (user) {
+        if (user?.user?.username) {
           clearInterval(refreshTokenInterval);
           refreshToken();
           refreshTokenInterval = setInterval(() => { refreshToken() }, 1000 * 60 * 5);
+        } else {
+
         }
       }
 

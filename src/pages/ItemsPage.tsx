@@ -72,7 +72,7 @@ const ItemsPage = () => {
     const renderItems = useCallback(() => {
         return (
                     items.map(item => (
-                        <div className='single-item-container mb-5 col-md-4' key={item.itemId} style={{position: `relative`}} >
+                        <div className='single-item-container mb-5 col-md-4 pointer' key={item.itemId} style={{position: `relative`}} onClick={() => navigate(`/items/${item.itemId}`)}>
                             {/* ITEM IMAGE */}
                             { 
                                 item.mainImage

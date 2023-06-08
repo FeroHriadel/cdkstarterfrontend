@@ -39,6 +39,20 @@ export const fetchItems = (query: {[key: string]: string} | null) => async (disp
 
 
 
+export const getItemById = async (itemId: string) => {
+    try {
+        const res = await fetch(`${api}/items?item=${itemId}`);
+        const data = await res.json();
+        if (data && data.error) throw new Error(`${data.error}`);
+        return data;
+    } catch (error) {
+        console.log(error);
+        return {error};
+    }
+}
+
+
+
 export const saveItem = (
     item: ItemModel, 
     mainImageData: {fileName: string, imageFile: any} | null, 

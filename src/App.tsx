@@ -16,6 +16,7 @@ import CategoryFormPage from './pages/CategoryFormPage';
 import CategoryPage from './pages/CategoryPage';
 import ItemsPage from './pages/ItemsPage';
 import ItemFormPage from './pages/ItemFormPage';
+import ItemPage from './pages/ItemPage';
 
 
 
@@ -34,6 +35,7 @@ function App() {
           <Route path='/categories' element={<CategoriesPage />} />
           <Route path='/categories/:categoryId' element={<CategoryPage />} />
           <Route path='/items/' element={<ItemsPage />} />
+          <Route path='/items/:itemId' element={<ItemPage />} />
 
           <Route path='/admin' element={<AdminOnly />}>
             <Route path='/admin/tagform' element={<TagFormPage />} />

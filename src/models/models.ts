@@ -27,6 +27,7 @@ export interface ItemModel {
     price?: string;
     quantity?: string;
     type?: '#ITEM';
+    createdBy?: string;
     createdAt?: string;
     updatedAt?: string;
 }
