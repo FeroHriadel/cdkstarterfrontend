@@ -126,10 +126,10 @@ const ItemsPage = () => {
             {
                 user?.user?.role === 'admins'
                 &&
-                <Button variant="primary" className="mb-5 mt-3 col-12" onClick={() => navigate('/admin/itemform')}>Create New Item</Button>
+                <Button variant="primary" className="mt-3 col-12" onClick={() => navigate('/admin/itemform')}>Create New Item</Button>
             }
 
-            <div className='items-container row'>
+            <div className='items-container row mt-5'>
                 {
                     items && tags && categories
                     &&
