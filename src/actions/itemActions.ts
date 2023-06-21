@@ -229,3 +229,32 @@ export const saveItem = (
         })
     }
 }
+
+
+
+export const deleteItem = (itemId: string, token: string) => async (dispatch: any) => {
+    try {
+        dispatch(changeMessage('Deleting item...'));
+        const res = await fetch(`${api}/items?itemId=${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+        if (data && data.error) {
+            console.log(data.error);
+            dispatch(changeMessage(data.error)); 
+            setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+            return
+        }
+        dispatch(removeItem(itemId));
+        dispatch(changeMessage('Item deleted'));
+        setTimeout(() => {dispatch(changeMessage(''))}, 1000);
+
+    } catch (error) {
+        console.log(error);
+        dispatch(changeMessage(JSON.stringify(error)));
+        setTimeout(() => {dispatch(changeMessage(''))}, 2000);
+    }
+}

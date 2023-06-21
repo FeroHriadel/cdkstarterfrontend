@@ -7,12 +7,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { fetchTags } from '../actions/tagActions';
 import { fetchCategories } from '../actions/categoryActions';
-import { fetchItems } from '../actions/itemActions';
+import { fetchItems, deleteItem } from '../actions/itemActions';
 
 import { ItemModel } from '../models/models';
 
 import { Button } from 'react-bootstrap';
 import FilterAccordion from '../components/FilterAccordion';
+import ConfirmModal from '../components/modals/ConfirmModal';
+
+import { FaTrash } from 'react-icons/fa';
 
 
 
@@ -27,6 +30,9 @@ const ItemsPage = () => {
     const items = useSelector((state: RootState) => state.items);
     const [message, setMessage] = useState('');
     const { user } = useContext(UserContext);
+    const [modalShown, setModalShown] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<string | null>('');
+    const [actionConfirmed, setActionConfirmed] = useState(false);
 
 
 
@@ -65,6 +71,18 @@ const ItemsPage = () => {
             return { tagId, name: 'Error - tag not found' }
         }
     }
+
+    //delete item modal
+    useEffect(() => {
+        if (modalShown === false) setItemToDelete(null);
+    }, [modalShown]);
+
+    useEffect(() => {
+        if (actionConfirmed && itemToDelete) {
+            dispatch(deleteItem(itemToDelete, user!.token!));
+            setActionConfirmed(false);
+        }
+      }, [actionConfirmed, user, itemToDelete, dispatch]);
     
 
 
@@ -72,18 +90,18 @@ const ItemsPage = () => {
     const renderItems = useCallback(() => {
         return (
                     items.map(item => (
-                        <div className='single-item-container mb-5 col-md-4 pointer' key={item.itemId} style={{position: `relative`}} onClick={() => navigate(`/items/${item.itemId}`)}>
+                        <div className='single-item-container mb-5 col-md-4' key={item.itemId} style={{position: `relative`}}>
                             {/* ITEM IMAGE */}
                             { 
                                 item.mainImage
                                 ?
-                                <div style={{width: '100%', height: `400px`, background: `url(${item.mainImage}) no-repeat center center/cover`}} />
+                                <div className='pointer' style={{width: '100%', height: `400px`, background: `url(${item.mainImage}) no-repeat center center/cover`}} onClick={() => navigate(`/items/${item.itemId}`)} />
                                 :
-                                <div className='d-flex align-items-center justify-content-center w-100' style={{height: `400px`, background: '#eee'}} /> 
+                                <div className='d-flex align-items-center justify-content-center w-100 pointer' style={{height: `400px`, background: '#eee'}} onClick={() => navigate(`/items/${item.itemId}`)} /> 
                             }
 
                             {/* ITEM NAME */}
-                            <h4 style={{position: `absolute`, top: 5, left: 25, textShadow: '0 0 5px #eee'}}>{item.name}</h4>
+                            <h4 style={{position: `absolute`, top: 5, left: 25, textShadow: '0 0 5px #eee'}} className='pointer' onClick={() => navigate(`/items/${item.itemId}`)}>{item.name}</h4>
 
                             {/* CATEGORY AND TAGS CIRCLES */}
                             <div className='item-circles-container my-1' style={{position: `absolute`, bottom: 5, left: 25, width: `75%`}}>
@@ -105,6 +123,16 @@ const ItemsPage = () => {
                                         </div>
                                     ))
                                 }
+                                {
+                                    ((user && user.user && user.user.username ) || (user && user.user && user.user.role === 'admins'))
+                                    &&
+                                    <div className='category-or-tag-circle bg-dark pointer' style={{transform: 'rotate(0deg)'}}>
+                                        <FaTrash 
+                                            style={{transform: 'scale(1.25)'}}
+                                            onClick={() => {setModalShown(true); setItemToDelete(item.itemId!)}}
+                                        />
+                                    </div>
+                                }
                             </div>
                         </div>
                     ))
@@ -124,7 +152,7 @@ const ItemsPage = () => {
             }
 
             {
-                user?.user?.role === 'admins'
+                user?.user?.email
                 &&
                 <Button variant="primary" className="mt-3 col-12" onClick={() => navigate('/admin/itemform')}>Create New Item</Button>
             }
@@ -138,6 +166,8 @@ const ItemsPage = () => {
                     </div>
                 }
             </div>
+
+            <ConfirmModal show={modalShown} onHide={() => setModalShown(false)} setActionConfirmed={setActionConfirmed} />
         </div>
     )
 }

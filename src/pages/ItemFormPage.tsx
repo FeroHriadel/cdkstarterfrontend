@@ -9,6 +9,7 @@ import { ItemModel, CategoryModel } from '../models/models';
 import TagsSelect from '../components/forms/TagsSelect';
 import { changeMessage } from '../slices/messageSlice';
 import { saveItem } from '../actions/itemActions';
+import LoggedInOnly from '../components/routeGuards/LoggedInOnly';
 
 
 
@@ -177,6 +178,9 @@ const ItemFormPage = () => {
     //RENDER
     return (
         <div className='container'>
+
+            <LoggedInOnly />
+
             <h1 className='text-center'>Create Item Page</h1>
             <Button variant='secondary' onClick={() => navigate(-1)}>Go Back</Button>
 

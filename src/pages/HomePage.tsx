@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 
 const HomePage: React.FC = () => {
+
   return (
     <div className='container text-center'>
         <h1>Home Page</h1>
