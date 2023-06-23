@@ -17,6 +17,7 @@ import CategoryPage from './pages/CategoryPage';
 import ItemsPage from './pages/ItemsPage';
 import ItemFormPage from './pages/ItemFormPage';
 import ItemPage from './pages/ItemPage';
+import BatchOperationsPage from './pages/BatchOperationsPage';
 
 
 
@@ -41,6 +42,7 @@ function App() {
             <Route path='/admin/tagform' element={<TagFormPage />} />
             <Route path='/admin/categoryform' element={<CategoryFormPage />} />
             <Route path='/admin/itemform' element={<ItemFormPage />} />
+            <Route path='/admin/batchoperations' element={<BatchOperationsPage />} />
           </Route>
 
           <Route path='*' element={<HomePage />} />
