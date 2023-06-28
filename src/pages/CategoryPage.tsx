@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getCategoryById } from '../actions/categoryActions';
 import { Button } from 'react-bootstrap';
 import { CategoryModel } from '../models/models';
+import { getS3Object } from '../helpers/getS3Object';
 
 
 
@@ -12,17 +13,27 @@ const CategoryPage = () => {
     const navigate = useNavigate();
     const [category, setCategory] = useState<CategoryModel | null>(null);
     const [message, setMessage] = useState('');
+    const [image, setImage] = useState<any>(null);
 
 
 
     //METHODS
+    //get category
     useEffect(() => {
         setMessage('Getting Category...');
         getCategoryById(params.categoryId!).then(result => {
             if (result && result.error) setMessage(result.error);
             else { setCategory(result); setMessage(''); }
         });
-    }, [])
+    }, []);
+
+    //get category image
+    useEffect(() => {
+        if (category && category.image) getS3Object(category.image)
+        .then(data => {
+            if (!data.error) setImage(data);
+        })
+    }, [category]);
 
 
 
@@ -41,9 +52,9 @@ const CategoryPage = () => {
             <div className="row">
                 <div className='col-md-6 mb-5'>
                     {
-                        category && category.image
+                        category && image
                         ?
-                        <img src={category.image} className=' w-100 img-fluid mb-3' style={{borderRadius: '10px'}} />
+                        <img src={image} className=' w-100 img-fluid mb-3' style={{borderRadius: '10px'}} />
                         :
                         <h4 className='text-center'>This category has no image yet</h4>
                     }

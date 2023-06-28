@@ -2,7 +2,8 @@ import React, { useEffect, useState, useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchCategories, deleteCategory } from '../actions/categoryActions';
+import { fetchCategories } from '../actions/categoryActions';
+import { batchDeleteItems } from '../actions/itemActions';
 import { RootState, AppDispatch } from '../store';
 import { ListGroup, Button } from 'react-bootstrap';
 import { FaTrash, FaPenFancy } from "react-icons/fa";
@@ -25,9 +26,22 @@ const BatchOperationsPage = () => {
 
 
   //METHODS
+  //get categories
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
+
+  //modal
+  useEffect(() => {
+    if (modalShown === false) setCategoryToDelete(null);
+  }, [modalShown]);
+
+  useEffect(() => {
+    if (actionConfirmed && categoryToDelete) {
+        dispatch(batchDeleteItems(categoryToDelete, token!));
+        setActionConfirmed(false);
+    }
+  }, [actionConfirmed, token, categoryToDelete, dispatch]);
 
 
 
@@ -52,20 +66,19 @@ const BatchOperationsPage = () => {
                 categories.map(category => (<ListGroup.Item key={category.categoryId}>
                     <div className='w-100 d-flex align-items-center justify-content-between'>
                         <div className='d-flex align-items-center pointer' onClick={() => navigate(`/categories/${category.categoryId}`)}>
-                            { 
-                                category.image
-                                ?
-                                <div className='category-thumbnail' style={{backgroundImage: `url(${category.image})`}} />
-                                :
-                                <div className='category-thumbnail' />
-                            }
                             <p>{category.name}</p>
                         </div>
                         {
                             user?.user?.role === 'admins'
                             &&
                             <div className='d-flex'>
-                                <p title='delete' className='m-1 pointer' onClick={() => {setModalShown(true); setCategoryToDelete(category.categoryId!)}}> <FaTrash /> </p>
+                                <p title='delete' className='m-1 pointer' onClick={() => {
+                                    if (message) return;
+                                    setModalShown(true); 
+                                    setCategoryToDelete(category.categoryId!)}}
+                                >
+                                    <FaTrash />
+                                </p>
                             </div> 
                         }
                     </div>

@@ -19,7 +19,7 @@ aws console/Cognito/TestUserPool/Create user:
 
 export const amplifyConfig = {
     REGION: 'us-east-1',
-    USER_POOL_ID: 'us-east-1_KJOzeaNHh',
-    APP_CLIENT_ID: '6lmure4kp3773snladapgm9ftl',
-    IDENTITY_POOL_ID: 'us-east-1:2c157788-5edb-45c5-8155-817de9d0d9e2',
+    USER_POOL_ID: 'us-east-1_RgLKCTXRN',
+    APP_CLIENT_ID: '6lupoc4mc4hv4jl166o5ltdtig',
+    IDENTITY_POOL_ID: 'us-east-1:86d64038-105c-4376-b108-ea6bbcb8362f',
 }

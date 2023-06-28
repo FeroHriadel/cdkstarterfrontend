@@ -7,6 +7,7 @@ import { RootState, AppDispatch } from '../store';
 import { ListGroup, Button } from 'react-bootstrap';
 import { FaTrash, FaPenFancy } from "react-icons/fa";
 import ConfirmModal from '../components/modals/ConfirmModal';
+import { getS3Object } from '../helpers/getS3Object';
 
 
 
@@ -16,6 +17,7 @@ const CategoriesPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch(); //dispatch like e.g.: dispatch(changeMessage('No tags found'));
   const message = useSelector((state: RootState) => state.message);
   const categories = useSelector((state: RootState) => state.categories);
+  const [categoriesImages, setCategoriesImages] = useState<{[key: string]: string} | null>(null);
   const [modalShown, setModalShown] = useState(false);
   const [actionConfirmed, setActionConfirmed] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
@@ -25,10 +27,38 @@ const CategoriesPage: React.FC = () => {
 
 
   //METHODS
+  //get categories
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
+  //populate categories with images
+  const getCategoryImage = async (categoryId: string, image: string) => {
+    return new Promise((resolve, reject) => {
+        getS3Object(image).then(data => {
+            if (!data.error) return resolve({image: data, categoryId: categoryId})
+            else return resolve({image: '', categoryId: categoryId})
+        })
+    })
+  }
+
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+        let idImagePairs: {[key: string]: string} = {};
+        Promise.all(categories.map(async c => {
+            if (c.image) return await getCategoryImage(c.categoryId!, c.image!)
+            else return ({[`${c.categoryId}`]: ''})
+        }))
+        .then(data => {
+            (data as any[]).forEach((item, idx) => {
+                idImagePairs[`${item.categoryId}`] = item.image
+                if (idx === data.length - 1) { setCategoriesImages(idImagePairs) }
+            });
+        })
+    }
+  }, [categories])
+
+  //modal
   useEffect(() => {
     if (modalShown === false) setCategoryToDelete(null);
   }, [modalShown]);
@@ -76,9 +106,9 @@ const CategoriesPage: React.FC = () => {
                         <div className='w-100 d-flex align-items-center justify-content-between'>
                             <div className='d-flex align-items-center pointer' onClick={() => navigate(`/categories/${category.categoryId}`)}>
                                 { 
-                                    category.image
+                                    category.image && categoriesImages && categoriesImages[`${category.categoryId}`] !== ''
                                     ?
-                                    <div className='category-thumbnail' style={{backgroundImage: `url(${category.image})`}} />
+                                    <div className='category-thumbnail' style={{backgroundImage: `url(${categoriesImages[`${category.categoryId}`]})`}} />
                                     :
                                     <div className='category-thumbnail' />
                                 }

@@ -258,3 +258,24 @@ export const deleteItem = (itemId: string, token: string) => async (dispatch: an
         setTimeout(() => {dispatch(changeMessage(''))}, 2000);
     }
 }
+
+
+
+export const batchDeleteItems = (categoryId: string, token: string) => async (dispatch: any) => {
+    try {
+        dispatch(changeMessage(`Deleting items...`));
+        let res = await fetch(`${api}/batchdeleteitems?categoryId=${categoryId}`, {
+            method: 'GET', 
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Call failed');
+        dispatch(changeMessage(`Processing...`));
+        setTimeout(() => { dispatch(changeMessage(`Items are being deleted`)); }, 500);
+        setTimeout(() => { dispatch(changeMessage('')); }, 2000);
+        
+    } catch (error) {
+        console.log(error);
+        dispatch(changeMessage(JSON.stringify(error)));
+        setTimeout(() => { dispatch(changeMessage('')) }, 2000);
+    }
+}

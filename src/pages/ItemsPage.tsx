@@ -8,6 +8,7 @@ import { RootState, AppDispatch } from '../store';
 import { fetchTags } from '../actions/tagActions';
 import { fetchCategories } from '../actions/categoryActions';
 import { fetchItems, deleteItem } from '../actions/itemActions';
+import { getS3Object } from '../helpers/getS3Object';
 
 import { ItemModel } from '../models/models';
 
@@ -27,7 +28,9 @@ const ItemsPage = () => {
     const reduxMessage = useSelector((state: RootState) => state.message);
     const tags = useSelector((state: RootState) => state.tags);
     const categories = useSelector((state: RootState) => state.categories);
+    const [categoriesImages, setCategoriesImages] = useState<{[key: string]: string} | null>(null);
     const items = useSelector((state: RootState) => state.items);
+    const [itemsImages, setItemsImages] = useState<{[key: string]: string} | null>(null);
     const [message, setMessage] = useState('');
     const { user } = useContext(UserContext);
     const [modalShown, setModalShown] = useState(false);
@@ -44,12 +47,73 @@ const ItemsPage = () => {
         dispatch(fetchItems(null))
     }, [dispatch]);
 
+    //get categories images
+    const getCategoryImage = async (categoryId: string, image: string) => {
+        return new Promise((resolve, reject) => {
+            getS3Object(image).then(data => {
+                if (!data.error) return resolve({image: data, categoryId: categoryId})
+                else return resolve({image: '', categoryId: categoryId})
+            })
+        })
+    }
+
+    useEffect(() => {
+        if (categories.length > 0) {
+            let idImagePairs: {[key: string]: string} = {};
+            Promise.all(categories.map(async c => {
+                if (c.image) return await getCategoryImage(c.categoryId!, c.image!)
+                else return ({[`${c.categoryId}`]: ''})
+            }))
+            .then(data => {
+                (data as any[]).forEach((item, idx) => {
+                    idImagePairs[`${item.categoryId}`] = item.image
+                    if (idx === data.length - 1) { setCategoriesImages(idImagePairs) }
+                });
+            })
+        }
+    }, [categories])
+
+    //get items images
+    const getItemImage = async (itemId: string, image: string) => {
+        return new Promise((resolve, reject) => {
+            getS3Object(image).then(data => {
+                if (!data.error) return resolve({image: data, itemId: itemId})
+                else return resolve({image: '', itemId: itemId})
+            })
+        })
+    }
+
+    useEffect(() => {
+        if (items.length > 0) {
+            let idImagePairs: {[key: string]: string} = {};
+            Promise.all(items.map(async itm => {
+                if (itm.mainImage) return await getItemImage(itm.itemId!, itm.mainImage!)
+                else return ({[`${itm.itemId}`]: ''})
+            }))
+            .then(data => {
+                (data as any[]).forEach((item, idx) => {
+                    idImagePairs[`${item.itemId}`] = item.image;
+                    console.log(data)
+                    if (idx === data.length - 1) { setItemsImages(idImagePairs) }
+                });
+            })
+        }
+    }, [items])
+
+
     //populate item's category with category.name & category.image
+    const getCategoryImageLink = (categoryId: string) => {
+        if (categoriesImages && categoriesImages[`${categoryId}`]) {
+            return categoriesImages[`${categoryId}`]
+        }
+        else return ''
+    }
+
     const populateItemsCategory = (categoryId: string) => {
         if (categories.length) {
             let idx = categories.findIndex(c => c.categoryId === categoryId);
             if (idx !== -1) {
-                return { category: categoryId, name: categories[idx].name, image: categories[idx].image ? categories[idx].image : '' };
+                return { category: categoryId, name: categories[idx].name, image: categories[idx].image ? getCategoryImageLink(categoryId) : '' };
             } else {
                 return { category: categoryId, name: 'Error - category not found', image: '' }
             }
@@ -87,6 +151,13 @@ const ItemsPage = () => {
 
 
     //RENDER
+    const getItemImageLink = (itemId: string) => {
+        if (itemsImages && itemsImages[`${itemId}`]) {
+            return itemsImages[`${itemId}`]
+        }
+        else return ''
+    }
+
     const renderItems = useCallback(() => {
         return (
                     items.map(item => (
@@ -95,7 +166,7 @@ const ItemsPage = () => {
                             { 
                                 item.mainImage
                                 ?
-                                <div className='pointer' style={{width: '100%', height: `400px`, background: `url(${item.mainImage}) no-repeat center center/cover`}} onClick={() => navigate(`/items/${item.itemId}`)} />
+                                <div className='pointer' style={{width: '100%', height: `400px`, background: `url(${getItemImageLink(item.itemId!)}) no-repeat center center/cover`}} onClick={() => navigate(`/items/${item.itemId}`)} />
                                 :
                                 <div className='d-flex align-items-center justify-content-center w-100 pointer' style={{height: `400px`, background: '#eee'}} onClick={() => navigate(`/items/${item.itemId}`)} /> 
                             }
@@ -137,7 +208,7 @@ const ItemsPage = () => {
                         </div>
                     ))
         )
-    }, [items]);
+    }, [items, categoriesImages, itemsImages]);
 
     return (
         <div className='container text-center'>

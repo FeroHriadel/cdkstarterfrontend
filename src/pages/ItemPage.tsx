@@ -2,6 +2,7 @@ import React, { useState, useEffect} from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { getItemById } from '../actions/itemActions';
+import { getS3Object } from '../helpers/getS3Object';
 
 import { Button } from 'react-bootstrap';
 import { ItemModel } from '../models/models';
@@ -18,6 +19,7 @@ const ItemPage = () => {
     const [message, setMessage] = useState('');
     const [item, setItem] = useState<ItemModel | null>(null);
     const [selectedImage, setSelectedImage] = useState('');
+    const [images, setImages] = useState<string[] | null>(null);
 
 
 
@@ -27,14 +29,48 @@ const ItemPage = () => {
         setMessage('Getting Item...')
         getItemById(itemId!).then(data => {
             if (data.error) setMessage('Could not get Item');
-            else { setItem(data); setMessage(''); console.log(data) }
+            else { setItem(data); setMessage(''); }
         })
     }, [itemId]);
 
-    //select image
+    //get item's images
+    const getItemImage = (image: string) => {
+        return new Promise((resolve, reject) => {
+            getS3Object(image).then(data => {
+                if (!data.error) { return resolve(data) }
+                else return resolve('')
+            })
+        })
+    }
+
     useEffect(() => {
-        if (item && item.mainImage) setSelectedImage(item.mainImage);
+        if (item) {
+            let images = [];
+            if (item.mainImage) {
+                images.push(item.mainImage);
+                if (item.images && item.images.length > 0) item.images.forEach(img => images.push(img))
+            }
+
+            if (images.length > 0) {
+                Promise.all(images.map(async img => { return await getItemImage(img)})).then((data) => {
+                    setImages(data as string[])
+                })
+            }
+        }
     }, [item])
+
+    //select deafultly clicked image
+    useEffect(() => {
+        if (images && images.length > 0) {
+            setSelectedImage(images[0]);
+        }
+    }, [images])
+
+    // //select deafultly clicked image
+    // useEffect(() => {
+    //     if (item && item.mainImage) setSelectedImage(item.mainImage);
+    // }, [item])
+
 
 
 
@@ -66,22 +102,11 @@ const ItemPage = () => {
                         }
 
                         {
-                            item.images && item.images.length > 0
+                            images && images.length > 0
                             &&
                             <div className="w-100 d-flex justify-content-start" style={{flexWrap: 'wrap'}}>
-                                <div 
-                                    key={item.mainImage!}
-                                    style={{
-                                        width: 100,
-                                        height: 100,
-                                        background: `url(${item.mainImage!}) no-repeat center center/cover`,
-                                        margin: '0.1rem 0.2rem 0.1rem 0'
-                                    }}
-                                    onClick={() => {setSelectedImage(item.mainImage!)}}
-                                />
-
                                 {
-                                    item.images.map(img => (
+                                    images.map(img => (
                                         <div 
                                             key={img}
                                             style={{
