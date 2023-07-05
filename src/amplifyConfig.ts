@@ -1,10 +1,10 @@
 /* 
 GO TO BACKEND AND CDK DEPLOY
 it will give you the follwoing output:
-    CdkStarterStack.CdkStarterApiEndpointB31BC629 = https://bn60jk4vyc.execute-api.us-east-1.amazonaws.com/prod/
-    CdkStarterStack.IdentityPoolId = us-east-1:2c157788-5edb-45c5-8155-817de9d0d9e2
-    CdkStarterStack.UserPoolClientId = 6lmure4kp3773snladapgm9ftl
-    CdkStarterStack.UserPoolId = us-east-1_KJOzeaNHh
+    CdkStarterStack.CdkStarterApiEndpointB31BC629 = https://eg3izp9k07.execute-api.us-east-1.amazonaws.com/prod/
+    CdkStarterStack.IdentityPoolId = us-east-1:478b510b-7249-4cd2-9489-63f6206c0204
+    CdkStarterStack.UserPoolClientId = 168sck2atlof55uiilgckgun4m
+    CdkStarterStack.UserPoolId = us-east-1_xuz7mJB7s
 
 
 GO TO AWS CONSOLE
@@ -19,7 +19,7 @@ aws console/Cognito/TestUserPool/Create user:
 
 export const amplifyConfig = {
     REGION: 'us-east-1',
-    USER_POOL_ID: 'us-east-1_RgLKCTXRN',
-    APP_CLIENT_ID: '6lupoc4mc4hv4jl166o5ltdtig',
-    IDENTITY_POOL_ID: 'us-east-1:86d64038-105c-4376-b108-ea6bbcb8362f',
+    USER_POOL_ID: 'us-east-1_xuz7mJB7s',
+    APP_CLIENT_ID: '168sck2atlof55uiilgckgun4m',
+    IDENTITY_POOL_ID: 'us-east-1:478b510b-7249-4cd2-9489-63f6206c0204',
 }
